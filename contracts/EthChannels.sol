@@ -7,6 +7,7 @@ contract EthChannels {
     }
     
     function withdraw(uint amount) public {
+        require(balances[msg.sender] >= amount);
         balances[msg.sender] -= amount;
         msg.sender.transfer(amount);
     }

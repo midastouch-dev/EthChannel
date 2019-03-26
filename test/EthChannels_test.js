@@ -19,5 +19,14 @@ contract('EthChannels', function (accounts) {
         
         assert.equal(balance, 1000);
     });
+    
+    it('deposit and withdraw', async function () {
+        await this.channels.deposit({ from: accounts[0], value: 1000 });
+        await this.channels.withdraw(500, { from: accounts[0] });
+        
+        const balance = await this.channels.balanceOf(accounts[0]);
+        
+        assert.equal(balance, 500);
+    });
 });
 

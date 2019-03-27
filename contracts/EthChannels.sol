@@ -1,5 +1,6 @@
 
 contract EthChannels {
+    uint nchannels;
     mapping (address => uint) balances;
     mapping (address => uint) reserves;
     
@@ -9,6 +10,8 @@ contract EthChannels {
         uint    creatorBalance;
         uint    participantBalance;
     }
+    
+    event CreateChannel(address creator, address participant, uint creatorBalance, bytes32 channelId);
     
     function deposit() public payable {
         balances[msg.sender] += msg.value;
@@ -31,6 +34,10 @@ contract EthChannels {
     function openChannel(uint amount, address participant) public returns (bytes32) {
         balances[msg.sender] -= amount;
         reserves[msg.sender] += amount;
+        uint nchannel = nchannels++;
+        
+        bytes32 channelId = keccak256(abi.encodePacked(msg.sender, participant, nchannel));
+        emit CreateChannel(msg.sender, participant, amount, channelId);
     }
 }
 

@@ -2,6 +2,7 @@
 const EthChannels = artifacts.require('./EthChannels');
 
 const expectThrow = require('./utils').expectThrow;
+const promisify = require('./utils').promisify;
 
 contract('EthChannels', function (accounts) {
     beforeEach(async function () {
@@ -52,6 +53,21 @@ contract('EthChannels', function (accounts) {
         const reserved = await this.channels.reserveOf(accounts[0]);
         
         assert.equal(reserved, 500);
+        
+        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
+
+        const logs = await promisify(cb => createChannelEvent.get(cb));
+        
+        assert.ok(logs);
+        assert.ok(Array.isArray(logs));
+        assert.ok(logs.length);
+        assert.equal(logs.length, 1);
+        
+        assert.equal(logs[0].event, 'CreateChannel');
+        assert.equal(logs[0].args.creator, accounts[0]);
+        assert.equal(logs[0].args.participant, accounts[1]);
+        assert.equal(logs[0].args.creatorBalance, 500);
+        assert.ok(logs[0].args.channelId);
     });
 });
 

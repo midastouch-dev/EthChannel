@@ -68,6 +68,18 @@ contract('EthChannels', function (accounts) {
         assert.equal(logs[0].args.participant, accounts[1]);
         assert.equal(logs[0].args.creatorBalance, 500);
         assert.ok(logs[0].args.channelId);
+        
+        const channelId = logs[0].args.channelId;
+        
+        const data = await this.channels.getChannel(channelId);
+        
+        assert.ok(data);
+        assert.ok(Array.isArray(data));
+        assert.equal(data.length, 4);
+        assert.equal(data[0], accounts[0]);
+        assert.equal(data[1], accounts[1]);
+        assert.equal(data[2], 500);
+        assert.equal(data[3], 0);
     });
 });
 

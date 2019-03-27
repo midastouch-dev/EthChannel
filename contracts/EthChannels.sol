@@ -11,6 +11,8 @@ contract EthChannels {
         uint    participantBalance;
     }
     
+    mapping (bytes32 => Channel) channels;
+    
     event CreateChannel(address creator, address participant, uint creatorBalance, bytes32 channelId);
     
     function deposit() public payable {
@@ -37,7 +39,14 @@ contract EthChannels {
         uint nchannel = nchannels++;
         
         bytes32 channelId = keccak256(abi.encodePacked(msg.sender, participant, nchannel));
+        channels[channelId] = Channel(msg.sender, participant, amount, 0);
         emit CreateChannel(msg.sender, participant, amount, channelId);
+    }
+    
+    function getChannel(bytes32 channelId) public view returns (address, address, uint, uint) {
+        Channel storage channel = channels[channelId];
+        
+        return (channel.creator, channel.participant, channel.creatorBalance, channel.participantBalance);
     }
 }
 

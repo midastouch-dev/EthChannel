@@ -40,5 +40,18 @@ contract('EthChannels', function (accounts) {
         
         assert.equal(balance, 1000);
     });
+    
+    it('open channel', async function () {
+        await this.channels.deposit({ from: accounts[0], value: 1000 });
+        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        
+        const balance = await this.channels.balanceOf(accounts[0]);
+        
+        assert.equal(balance, 500);
+        
+        const reserved = await this.channels.reserveOf(accounts[0]);
+        
+        assert.equal(reserved, 500);
+    });
 });
 

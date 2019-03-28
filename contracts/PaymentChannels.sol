@@ -52,6 +52,8 @@ contract PaymentChannels {
     function transferToChannel(bytes32 channelId, uint amount) public {
         Channel storage channel = channels[channelId];
         
+        require(channel.creator == msg.sender || channel.participant == msg.sender);
+        
         balances[msg.sender] -= amount;
         reserves[msg.sender] += amount;
         

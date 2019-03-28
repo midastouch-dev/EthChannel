@@ -48,5 +48,17 @@ contract PaymentChannels {
         
         return (channel.creator, channel.participant, channel.creatorBalance, channel.participantBalance);
     }
+    
+    function transferToChannel(bytes32 channelId, uint amount) public {
+        Channel storage channel = channels[channelId];
+        
+        balances[msg.sender] -= amount;
+        reserves[msg.sender] += amount;
+        
+        if (msg.sender == channel.participant)
+            channel.participantBalance += amount;
+        else
+            channel.creatorBalance += amount;
+    }
 }
 

@@ -53,6 +53,7 @@ contract PaymentChannels {
         Channel storage channel = channels[channelId];
         
         require(channel.creator == msg.sender || channel.participant == msg.sender);
+        require(balances[msg.sender] >= amount);
         
         balances[msg.sender] -= amount;
         reserves[msg.sender] += amount;

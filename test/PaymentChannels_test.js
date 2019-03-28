@@ -1,12 +1,12 @@
 
-const EthChannels = artifacts.require('./EthChannels');
+const PaymentChannels = artifacts.require('./PaymentChannels');
 
 const expectThrow = require('./utils').expectThrow;
 const promisify = require('./utils').promisify;
 
-contract('EthChannels', function (accounts) {
+contract('PaymentChannels', function (accounts) {
     beforeEach(async function () {
-        this.channels = await EthChannels.new();
+        this.channels = await PaymentChannels.new();
     });
     
     it('initial balance', async function () {

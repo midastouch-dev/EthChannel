@@ -1,5 +1,5 @@
 
-contract EthChannels {
+contract PaymentChannels {
     uint nchannels;
     mapping (address => uint) balances;
     mapping (address => uint) reserves;

@@ -44,19 +44,8 @@ contract('PaymentChannels', function (accounts) {
     
     it('open channel', async function () {
         await this.channels.deposit({ from: accounts[0], value: 1000 });
-        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
-        
-        const balance = await this.channels.balanceOf(accounts[0]);
-        
-        assert.equal(balance, 500);
-        
-        const reserved = await this.channels.reserveOf(accounts[0]);
-        
-        assert.equal(reserved, 500);
-        
-        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
-
-        const logs = await promisify(cb => createChannelEvent.get(cb));
+        const result = await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        const logs = result.logs;
         
         assert.ok(logs);
         assert.ok(Array.isArray(logs));
@@ -70,25 +59,30 @@ contract('PaymentChannels', function (accounts) {
         assert.ok(logs[0].args.channelId);
         
         const channelId = logs[0].args.channelId;
+
+        const balance = await this.channels.balanceOf(accounts[0]);
         
+        assert.equal(balance, 500);
+        
+        const reserved = await this.channels.reserveOf(accounts[0]);
+        
+        assert.equal(reserved, 500);
+
         const data = await this.channels.getChannel(channelId);
         
         assert.ok(data);
-        assert.ok(Array.isArray(data));
-        assert.equal(data.length, 4);
         assert.equal(data[0], accounts[0]);
         assert.equal(data[1], accounts[1]);
-        assert.equal(data[2], 500);
-        assert.equal(data[3], 0);
+        assert.equal(data[2].toNumber(), 500);
+        assert.equal(data[3].toNumber(), 0);
     });
 
     it('participant transfer to channel', async function () {
         await this.channels.deposit({ from: accounts[0], value: 1000 });
         await this.channels.deposit({ from: accounts[1], value: 1000 });
-        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        const result = await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
 
-        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
-        const logs = await promisify(cb => createChannelEvent.get(cb));
+        const logs = result.logs;
         const channelId = logs[0].args.channelId;
 
         await this.channels.transferToChannel(channelId, 400, { from: accounts[1] });
@@ -106,21 +100,17 @@ contract('PaymentChannels', function (accounts) {
         const data = await this.channels.getChannel(channelId);
         
         assert.ok(data);
-        assert.ok(Array.isArray(data));
-        assert.equal(data.length, 4);
         assert.equal(data[0], accounts[0]);
         assert.equal(data[1], accounts[1]);
-        assert.equal(data[2], 500);
-        assert.equal(data[3], 400);
+        assert.equal(data[2].toNumber(), 500);
+        assert.equal(data[3].toNumber(), 400);
     });
     
     it('creator transfer to channel', async function () {
         await this.channels.deposit({ from: accounts[0], value: 1000 });
         await this.channels.deposit({ from: accounts[1], value: 1000 });
-        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
-
-        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
-        const logs = await promisify(cb => createChannelEvent.get(cb));
+        const result = await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        const logs = result.logs;
         const channelId = logs[0].args.channelId;
 
         await this.channels.transferToChannel(channelId, 400, { from: accounts[0] });
@@ -138,21 +128,17 @@ contract('PaymentChannels', function (accounts) {
         const data = await this.channels.getChannel(channelId);
         
         assert.ok(data);
-        assert.ok(Array.isArray(data));
-        assert.equal(data.length, 4);
         assert.equal(data[0], accounts[0]);
         assert.equal(data[1], accounts[1]);
-        assert.equal(data[2], 900);
-        assert.equal(data[3], 0);
+        assert.equal(data[2].toNumber(), 900);
+        assert.equal(data[3].toNumber(), 0);
     });
 
     it('only creator or participant could transfer to channel', async function () {
         await this.channels.deposit({ from: accounts[0], value: 1000 });
         await this.channels.deposit({ from: accounts[1], value: 1000 });
-        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
-
-        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
-        const logs = await promisify(cb => createChannelEvent.get(cb));
+        const result = await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        const logs = result.logs;
         const channelId = logs[0].args.channelId;
 
         await expectThrow(this.channels.transferToChannel(channelId, 400, { from: accounts[2] }));
@@ -170,21 +156,18 @@ contract('PaymentChannels', function (accounts) {
         const data = await this.channels.getChannel(channelId);
         
         assert.ok(data);
-        assert.ok(Array.isArray(data));
-        assert.equal(data.length, 4);
         assert.equal(data[0], accounts[0]);
         assert.equal(data[1], accounts[1]);
-        assert.equal(data[2], 500);
-        assert.equal(data[3], 0);
+        assert.equal(data[2].toNumber(), 500);
+        assert.equal(data[3].toNumber(), 0);
     });
     
     it('cannot transfer to channel if not enough balance', async function () {
         await this.channels.deposit({ from: accounts[0], value: 1000 });
         await this.channels.deposit({ from: accounts[1], value: 1000 });
-        await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
+        const result = await this.channels.openChannel(500, accounts[1], { from: accounts[0] });
 
-        const createChannelEvent = this.channels.CreateChannel({}, { fromBlock: 1, toBlock: 'latest' });
-        const logs = await promisify(cb => createChannelEvent.get(cb));
+        const logs = result.logs;
         const channelId = logs[0].args.channelId;
 
         await expectThrow(this.channels.transferToChannel(channelId, 1000, { from: accounts[0] }));
@@ -202,12 +185,10 @@ contract('PaymentChannels', function (accounts) {
         const data = await this.channels.getChannel(channelId);
         
         assert.ok(data);
-        assert.ok(Array.isArray(data));
-        assert.equal(data.length, 4);
         assert.equal(data[0], accounts[0]);
         assert.equal(data[1], accounts[1]);
-        assert.equal(data[2], 500);
-        assert.equal(data[3], 0);
+        assert.equal(data[2].toNumber(), 500);
+        assert.equal(data[3].toNumber(), 0);
     });
 });
 
